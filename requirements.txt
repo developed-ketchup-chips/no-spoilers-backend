@@ -1,2 +1,7 @@
 wheel
 quart
+quart
+pyjwt
+python-dotenv
+pymongo
+bcrypt
