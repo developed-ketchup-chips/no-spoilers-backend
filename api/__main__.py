@@ -115,6 +115,5 @@ def update_room_progress(room_id, user_id):
         )
         return jsonify(list(rooms))
 
-
 if __name__ == "__main__":
     run()
