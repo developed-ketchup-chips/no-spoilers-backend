@@ -5,7 +5,7 @@ import secrets
 import pymongo
 from dataclasses import asdict
 from dotenv import load_dotenv
-from api.models import Room, RoomMember, User
+from models import Room, RoomMember, User
 from quart import Quart, jsonify, request
 
 app = Quart(__name__)
@@ -29,7 +29,7 @@ async def authenticate() -> None:
         token = secrets.token_urlsafe(32)
         names = ("John", "Andy", "Joe")
         new_user = User(
-            email=email,
+            _id=email,
             token=token,
             name=random.choice(names) + str(random.randint(1, 100)),
         )
@@ -114,6 +114,8 @@ def update_room_progress(room_id, user_id):
             {"members": {"$elemMatch": {"_id": user["_id"]}}}
         )
         return jsonify(list(rooms))
+    
+
 
 if __name__ == "__main__":
     run()
