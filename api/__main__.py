@@ -42,7 +42,7 @@ async def authenticate() -> None:
 
 
 @app.route("/room", methods=["POST", "GET"])
-async def rooms() -> None:
+async def room() -> None:
     user_token = request.headers.get("token")
     # get user's email from token
     user = db.get_collection("users").find_one({"token": user_token})
@@ -63,7 +63,7 @@ async def rooms() -> None:
                 _id=secrets.token_urlsafe(8),
                 name=name,
                 type=type,
-                length= int(length),
+                length=int(length),
                 members=[new_roommember],
             )
             db.get_collection("rooms").insert_one(asdict(new_room))
@@ -104,39 +104,31 @@ async def update_room_progress(room_id):
     # Retrieve the room based on the provided room_id
     room = db.get_collection("rooms").find_one({"_id" : room_id})
     user_token = request.headers.get("token")
-    try:
-        progress = int(request.args.get("progress"))
-        # get user's email from token
-        user = db.get_collection("users").find_one({"token": user_token})
-        if not user:
-            return "Invalid token", 201
-        if room:
-            # Find the user with the specified name within the room's members
-            user_to_update = next((member for member in room["members"] if member["_id"] == user["_id"]), None)
+    # get user's email from token
+    user = db.get_collection("users").find_one({"token": user_token})
+    if not user:
+        return "Invalid token", 201
+    if room:
+        # Find the user with the specified name within the room's members
+        user_to_update = next((member for member in room["members"] if member["_id"] == user["_id"]), None)
 
-            if user_to_update:
-                # Update the user's progress if it does not exceed length
-                if progress <= room["length"]:
-                    new_progress = progress
-                    user_to_update["progress"] = new_progress
-                    db.get_collection("rooms").update_one({"_id": room_id}, {"$set": {"members": room["members"]}})
-                    return jsonify({"message": "Progress updated successfully"})
-                else:
-                    return jsonify({"error": "Progress cannot exceed total number of media parts."}), 400
-                # Update the room document in the collection
+        if user_to_update:
+            # Update the user's progress if it does not exceed length
+            if request.args.get("progress") <= room["length"]:
+                new_progress = request.args.get("progress")
+                user_to_update["progress"] = new_progress
+                db.get_collection("rooms").update_one({"_id": room_id}, {"$set": {"members": room["members"]}})
+                return jsonify({"message": "Progress updated successfully"})
             else:
-                return jsonify({"error": "User not found in the room"}), 404
+                return jsonify({"error": "Progress cannot exceed total number of media parts."}), 404
+            # Update the room document in the collection
         else:
-            return jsonify({"error": "Room not found"}), 404
-    except Exception as e:
-            import traceback
+            return jsonify({"error": "User not found in the room"}), 404
+    else:
+        return jsonify({"error": "Room not found"}), 404
 
-            print(traceback.format_exc())
-            return str(e), 400
-
-
-@app.route("/rooms/<code>/join", methods=["POST"])
-async def rooms_code_join(code: str) -> None:
+@app.route("/room/<code>/join", methods=["POST"])
+async def room_code_join(code: str) -> None:
     # get room with code
     # code = request.args.get("code")
     if not code:
