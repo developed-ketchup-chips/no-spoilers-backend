@@ -7,10 +7,11 @@ from dataclasses import asdict
 from dotenv import load_dotenv
 from api.models import Room, RoomMember, User
 from quart import Quart, jsonify, request
-from quart_cors import cors as CORS
+from quart_cors import cors
 
 app = Quart(__name__)
-CORS(app)
+app = cors(app, allow_origin="*")
+app.config['CORS_HEADERS'] = 'Content-Type'
 load_dotenv()
 dbconn = pymongo.MongoClient(os.getenv("MONGO_URI"))
 db = dbconn.get_database("no-spoilers")
@@ -19,6 +20,9 @@ db = dbconn.get_database("no-spoilers")
 def run() -> None:
     app.run()
 
+def _corsify_actual_response(response):
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 @app.route("/authenticate", methods=["POST"])
 async def authenticate() -> None:
@@ -28,7 +32,7 @@ async def authenticate() -> None:
         return "No email provided", 400
     res = db.get_collection("users").find_one({"_id": email})
     if res:
-        return jsonify(token=res["token"])
+        return _corsify_actual_response(jsonify(token=res["token"]))
     else:
         token = secrets.token_urlsafe(32)
         names = ("John", "Andy", "Joe")
@@ -38,7 +42,7 @@ async def authenticate() -> None:
             name=random.choice(names) + str(random.randint(1, 100)),
         )
         db.get_collection("users").insert_one(asdict(new_user))
-        return jsonify(token=token)
+        return _corsify_actual_response(jsonify(token=token))
 
 
 @app.route("/room", methods=["POST", "GET"])
@@ -78,7 +82,7 @@ async def room() -> None:
         rooms = db.get_collection("rooms").find(
             {"members": {"$elemMatch": {"_id": user["_id"]}}}
         )
-        return jsonify(list(rooms))
+        return _corsify_actual_response(jsonify(list(rooms)))
 
 @app.route("/room/<room_id>", methods=["GET"])
 async def get_room_info(room_id):
@@ -97,7 +101,7 @@ async def get_room_info(room_id):
             return "Invalid token", 400
         # get all rooms with user's email in members
         # Query to find all rooms where the RoomMember is a member=
-        return jsonify({"error": "Room not found"}), 404
+        return _corsify_actual_response(jsonify({"error": "Room not found"})), 404
 
 @app.route("/room/<room_id>", methods=["PUT"])
 async def update_room_progress(room_id):
@@ -118,14 +122,14 @@ async def update_room_progress(room_id):
                 new_progress = request.args.get("progress")
                 user_to_update["progress"] = new_progress
                 db.get_collection("rooms").update_one({"_id": room_id}, {"$set": {"members": room["members"]}})
-                return jsonify({"message": "Progress updated successfully"})
+                return "", 201
             else:
-                return jsonify({"error": "Progress cannot exceed total number of media parts."}), 404
+                return "Progress cannot exceed total number of media parts.", 400
             # Update the room document in the collection
         else:
-            return jsonify({"error": "User not found in the room"}), 404
+            return "User not found in the room", 400
     else:
-        return jsonify({"error": "Room not found"}), 404
+        return "Room not found", 400
 
 @app.route("/room/<code>/join", methods=["POST"])
 async def room_code_join(code: str) -> None:
