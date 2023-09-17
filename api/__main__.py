@@ -47,29 +47,40 @@ async def rooms() -> None:
                 request.args.get("type"),
                 request.args.get("length"),
             )
-            user_token = request.headers.get('token')
+            user_token = request.headers.get("token")
             # get user's email from token
             user = db.get_collection("users").find_one({"token": user_token})
             if not user:
                 raise Exception("Invalid token")
             new_roommember = RoomMember(_id=user["_id"], name=user["name"], progress=0)
-            new_room = Room(_id=secrets.token_urlsafe(8), name=name, type=type, length=length, members=[new_roommember])
+            new_room = Room(
+                _id=secrets.token_urlsafe(8),
+                name=name,
+                type=type,
+                length=length,
+                members=[new_roommember],
+            )
             db.get_collection("rooms").insert_one(asdict(new_room))
             return "", 201
         except Exception as e:
             import traceback
+
             print(traceback.format_exc())
             return str(e), 400
     else:
-        user_token = request.headers.get('token')
+        user_token = request.headers.get("token")
         # get user's email from token
         user = db.get_collection("users").find_one({"token": user_token})
         if not user:
             return "Invalid token", 400
         # get all rooms with user's email in members
-        rooms = db.get_collection("rooms").find({"members": user["_id"]})
-        return jsonify(list(rooms))
+        # Query to find all rooms where the RoomMember is a member=
 
+        # Retrieve the rooms that match the query
+        rooms = db.get_collection("rooms").find(
+            {"members": {"$elemMatch": {"_id": user["_id"]}}}
+        )
+        return jsonify(list(rooms))
 
 
 if __name__ == "__main__":

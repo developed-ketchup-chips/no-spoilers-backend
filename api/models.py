@@ -2,17 +2,16 @@ from dataclasses import dataclass
 from typing import List
 
 
-
 @dataclass
 class User:
-    _id: str # email
+    _id: str  # email
     name: str
     token: str
 
 
 @dataclass
 class RoomMember:
-    _id: str # email
+    _id: str  # email
     name: str
     progress: int
 
@@ -20,11 +19,12 @@ class RoomMember:
 # Create an instance of room
 @dataclass
 class Room:
-    _id: str # code
+    _id: str  # code
     name: str
     type: str
     length: int
     members: List[RoomMember]
+
 
 @dataclass
 class Comment:
@@ -58,6 +58,7 @@ class Media:
         self.episodeList = (
             episodeList  # episode list is a collection of Episode objects
         )
+
 
 # Room: a show or book the user is participating in with multiple other users.
 # Call rooms associated with the user to display after the login page.
