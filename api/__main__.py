@@ -5,7 +5,7 @@ import secrets
 import pymongo
 from dataclasses import asdict
 from dotenv import load_dotenv
-from api.models import Room, RoomMember, User
+from models import Room, RoomMember, User
 from quart import Quart, jsonify, request
 
 app = Quart(__name__)
