@@ -10,7 +10,6 @@ class Comment():
         self.user = user
         self.comment = comment
         
-
 class CommentList():
     def __init__(self):
         self.comment_list = []

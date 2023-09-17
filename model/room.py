@@ -22,7 +22,3 @@ class Room(object):
         self.type = type,
         self.progress = progress, #int
         self.friends = friends
-
-
-
-        
