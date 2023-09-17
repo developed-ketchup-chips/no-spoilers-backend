@@ -1,7 +1,6 @@
 import pymongo
 from quart import Quart
 from dotenv import load_dotenv
-from utils.db import connect_to_mongodb
 import random
 from quart import Quart, jsonify, Blueprint, request
 import os
