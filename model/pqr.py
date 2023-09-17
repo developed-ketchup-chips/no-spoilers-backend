@@ -64,4 +64,9 @@ media9 = {
     "episode_count" : 1075 
 }
 
+media_collection.insert_many[media1, media2, media3, media4, media5, media6, media7, media8, media9]
+
+#user collection sample data
+
+user_collection = db["users"]
 
