@@ -1,8 +1,4 @@
 from pymongo import MongoClient
-# import sys
-#
-# import os
-# from utils import db
 
 try:
 
@@ -84,6 +80,7 @@ try:
 
 
     media_collection.insert_many(media_documents)
+
     #user collection sample data
     user_collection = db["users"]
     print("Connected to MongoDB")
