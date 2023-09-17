@@ -5,10 +5,12 @@ import secrets
 import pymongo
 from dataclasses import asdict
 from dotenv import load_dotenv
-from models import Room, RoomMember, User
+from api.models import Room, RoomMember, User
 from quart import Quart, jsonify, request
+from quart_cors import cors as CORS
 
 app = Quart(__name__)
+CORS(app)
 load_dotenv()
 dbconn = pymongo.MongoClient(os.getenv("MONGO_URI"))
 db = dbconn.get_database("no-spoilers")

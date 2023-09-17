@@ -437,6 +437,20 @@ docs = ["pydata_sphinx_theme"]
 dotenv = ["python-dotenv"]
 
 [[package]]
+name = "quart-cors"
+version = "0.6.0"
+description = "A Quart extension to provide Cross Origin Resource Sharing, access control, support"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "quart_cors-0.6.0-py3-none-any.whl", hash = "sha256:a12cb8f82506be9794c7d0fba62be04f07ca719e47e0691bf7a63d5ce661b70e"},
+    {file = "quart_cors-0.6.0.tar.gz", hash = "sha256:e7c3f176624cfaa934ea96eddbcaea0b6c225d8eee543f97bce3bdc22e1e00ef"},
+]
+
+[package.dependencies]
+quart = ">=0.15"
+
+[[package]]
 name = "werkzeug"
 version = "2.3.7"
 description = "The comprehensive WSGI web application library."
@@ -470,4 +484,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "04ab1803f226bd9f21e71f6f6d4b5ce1064905999d308aed5a41fb4ce1210c5c"
+content-hash = "fc0f4fddddfc17ad401e99472efe3948b76e5db56ace61566b6e694448d74c77"
