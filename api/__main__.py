@@ -26,8 +26,9 @@ def _corsify_actual_response(response):
 
 @app.route("/authenticate", methods=["POST"])
 async def authenticate() -> None:
+    args = await request.json
     # login with username and return session token
-    email = request.args.get("email")
+    email = args.get("email")
     if not email:
         return "No email provided", 400
     res = db.get_collection("users").find_one({"_id": email})
@@ -53,12 +54,13 @@ async def room() -> None:
     if not user:
         raise Exception("Invalid token")
     if request.method == "POST":
+        args = await request.json
         # create a new room
         try:
             name, type, length = (
-                request.args.get("name"),
-                request.args.get("type"),
-                request.args.get("length"),
+                args.get("name"),
+                args.get("type"),
+                args.get("length"),
             )
             if not name or not type or not length:
                 return "Missing required parameters", 400
@@ -110,6 +112,7 @@ async def update_room_progress(room_id):
     user_token = request.headers.get("token")
     # get user's email from token
     user = db.get_collection("users").find_one({"token": user_token})
+    args = await request.json
     if not user:
         return "Invalid token", 201
     if room:
@@ -118,8 +121,8 @@ async def update_room_progress(room_id):
 
         if user_to_update:
             # Update the user's progress if it does not exceed length
-            if request.args.get("progress") <= room["length"]:
-                new_progress = request.args.get("progress")
+            if args.get("progress") <= room["length"]:
+                new_progress = args.get("progress")
                 user_to_update["progress"] = new_progress
                 db.get_collection("rooms").update_one({"_id": room_id}, {"$set": {"members": room["members"]}})
                 return "", 201
