@@ -24,6 +24,8 @@ def run() -> None:
 async def authenticate() -> None:
     # login with username and return session token
     email = request.args.get("email")
+    if not email:
+        return "No email provided", 400
     res = db.get_collection("users").find_one({"_id": email})
     if res:
         return jsonify(token=res["token"])
@@ -39,7 +41,7 @@ async def authenticate() -> None:
         return jsonify(token=token)
 
 
-@app.route("/rooms", methods=["POST", "GET"])
+@app.route("/room", methods=["POST", "GET"])
 async def rooms() -> None:
     user_token = request.headers.get("token")
     # get user's email from token
@@ -54,6 +56,8 @@ async def rooms() -> None:
                 request.args.get("type"),
                 request.args.get("length"),
             )
+            if not name or not type or not length:
+                return "Missing required parameters", 400
             new_roommember = RoomMember(_id=user["_id"], name=user["name"], progress=0)
             new_room = Room(
                 _id=secrets.token_urlsafe(8),
