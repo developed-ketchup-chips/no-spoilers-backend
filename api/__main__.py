@@ -3,8 +3,9 @@ import random
 import secrets
 
 import pymongo
+from dataclasses import asdict
 from dotenv import load_dotenv
-from api.models import Room, User
+from api.models import Room, RoomMember, User
 from quart import Quart, jsonify, request
 
 app = Quart(__name__)
@@ -21,7 +22,7 @@ def run() -> None:
 async def authenticate() -> None:
     # login with username and return session token
     email = request.args.get("email")
-    res = db.get_collection("users").find_one({"email": email})
+    res = db.get_collection("users").find_one({"_id": email})
     if res:
         return jsonify(token=res["token"])
     else:
@@ -32,7 +33,7 @@ async def authenticate() -> None:
             token=token,
             name=random.choice(names) + str(random.randint(1, 100)),
         )
-        db.get_collection("users").insert_one(dict(new_user))
+        db.get_collection("users").insert_one(asdict(new_user))
         return jsonify(token=token)
 
 
@@ -46,13 +47,20 @@ async def rooms() -> None:
                 request.args.get("type"),
                 request.args.get("length"),
             )
-            new_room = Room(_id=secrets.token_urlsafe(8), name=name, type=type, length=length, members=[])
-            db.get_collection("rooms").insert_one(dict(new_room))
+            user_token = request.headers.get('token')
+            # get user's email from token
+            user = db.get_collection("users").find_one({"token": user_token})
+            if not user:
+                raise Exception("Invalid token")
+            new_roommember = RoomMember(_id=user["_id"], name=user["name"], progress=0)
+            new_room = Room(_id=secrets.token_urlsafe(8), name=name, type=type, length=length, members=[new_roommember])
+            db.get_collection("rooms").insert_one(asdict(new_room))
             return "", 201
         except Exception as e:
+            import traceback
+            print(traceback.format_exc())
             return str(e), 400
     else:
-        # get all my rooms
         user_token = request.headers.get('token')
         # get user's email from token
         user = db.get_collection("users").find_one({"token": user_token})

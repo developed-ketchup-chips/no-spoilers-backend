@@ -11,7 +11,9 @@ class User:
 
 
 @dataclass
-class RoomMember(User):
+class RoomMember:
+    _id: str # email
+    name: str
     progress: int
 
 
