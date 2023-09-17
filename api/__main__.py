@@ -96,24 +96,28 @@ async def get_room_info(room_id):
         return jsonify({"error": "Room not found"}), 404
 
 @app.route("/room/<room_id>", methods=["PUT"])
-async def update_room_progress(room_id, user_id):
+async def update_room_progress(room_id):
     # Retrieve the room based on the provided room_id
-    room = db.get_collection("rooms").find_one({"_id"})
+    room = db.get_collection("rooms").find_one({"_id" : room_id})
     user_token = request.headers.get("token")
     # get user's email from token
     user = db.get_collection("users").find_one({"token": user_token})
+    if not user:
+        return "Invalid token", 201
     if room:
         # Find the user with the specified name within the room's members
         user_to_update = next((member for member in room["members"] if member["_id"] == user["_id"]), None)
 
         if user_to_update:
-            # Update the user's progress
-            new_progress = request.json.get("progress")
-            user_to_update["progress"] = new_progress
-
+            # Update the user's progress if it does not exceed length
+            if request.args.get("progress") <= room["length"]:
+                new_progress = request.args.get("progress")
+                user_to_update["progress"] = new_progress
+                db.get_collection("rooms").update_one({"_id": room_id}, {"$set": {"members": room["members"]}})
+                return jsonify({"message": "Progress updated successfully"})
+            else:
+                return jsonify({"error": "Progress cannot exceed total number of media parts."}), 404
             # Update the room document in the collection
-            db.get_collection("rooms").update_one({"_id": int(room_id)}, {"$set": {"members": room["members"]}})
-            return jsonify({"message": "Progress updated successfully"})
         else:
             return jsonify({"error": "User not found in the room"}), 404
     else:
