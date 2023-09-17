@@ -1,91 +1,84 @@
 from pymongo import MongoClient
-# import sys
-#
-# import os
-# from utils import db
+from media_type import MediaType
+client = MongoClient("mongodb+srv://mihiri:mihiri@cluster0.ey8zati.mongodb.net/")
 
-try:
+# Access the "mydb" database (it will be created if it doesn't exist)
+db = client["no-spoilers"]
 
-    # Specify the database name in the connection string
-    client = MongoClient(
-            "mongodb+srv://saphia:saphia@cluster0.ey8zati.mongodb.net/mydb",
-            tls=True)
+#Sample Room Content
 
-    # Access the "mydb" database (it will be created if it doesn't exist)
-    db = client.get_database("users")
-    
-    # Insert data into a collection within the "mydb" database
-    media_collection = db["media"]
+room_collection = db['rooms']
 
-    # Sample media content
-    # add image files to media used for presentation
+room1 = {
+    "title": "Serial Experiments Lain",
+    "episode_count": 12,
+    "media_type": "TV Show",
+    "user_progress": [
+        {"name": "John", "progress": 6},  # User 1 has watched 6 episodes
+        {"name": "Jake", "progress": 6},  # User 2 has watched 2 episodes
+    ]
+}
 
-    media1 = {
-        "_id": 1,
-        "title": "Anne With an E",
-        "episode_count": 27
-    }
+client.close()
 
-    media2 = {
-        "_id": 2,
-        "title": "Attack on Titan",
-        "episode_count": 88
-    }
+#Sample media content
+#add image files to media used for presentation
 
-    media3 = {
-        "_id": 3,
-        "title": "1984",
-        "episode_count": 24
-    }
+# media1 = {
+#     "title" : "Anne With an E",
+#     "episode_count" : 27,
+#     "media_type" : "TV Show "
+# }
 
-    media4 = {
-        "_id": 4,
-        "title": "Harry Potter",
-        "episode_count": 25
-    }
+# media2 = {
+#     "title" : "Attack on Titan",
+#     "episode_count" : 88,
+#     "media_type" : "TV Show "
+# }
 
-    media5 = {
-        "_id": 5,
-        "title": "To Kill a Mockingbird",
-        "episode_count": 31
-    }
+# media3 = {
+#     "title" : "1984",
+#     "episode_count" : 24,
+#     "media_type" : "Book"
+# }
 
-    media6 = {
-        "_id": 6,
-        "title": "Breaking Bad",
-        "episode_count": 125
-    }
+# media4 = {
+#     "title" : "Harry Potter",
+#     "episode_count" : 25,
+#     "media_type" : "Book"
+# }
 
-    media7 = {
-        "_id": 7,
-        "title": "Money Heist",
-        "episode_count": 41
-    }
+# media5 = {
+#     "title" : "To Kill a Mockingbird",
+#     "episode_count" : 31,
+#     "media_type" : "Book"
+# }
 
-    media8 = {
-        "_id": 8,
-        "title": "The Hobbit",
-        "episode_count": 19
-    }
+# media6 = {
+#     "title" : "Breaking Bad",
+#     "episode_count" : 125,
+#     "media_type" : "TV Show"
+# }
 
-    media9 = {
-        "_id": 9,
-        "title": "One Piece",
-        "episode_count": 1075
-    }
+# media7 = {
+#     "title" : "Money Heist",
+#     "episode_count" : 41,
+#     "media_type" : "TV Show"
+# }
 
-    media10 = {
-        "_id": 10,
-        "title": "The Lord of the Rings",
-        "episode_count": 40
-    }
-    media_documents = [media1, media2, media3, media4, media5, media6, media7, media8, media9, media10]
+# media8 = {
+#     "title" : "The Hobbit",
+#     "episode_count" : 19,
+#     "media_type" : "Book"
+# }
 
+# media9 = {
+#     "title" : "One Piece",
+#     "episode_count" : 1075,
+#     "media_type" : "TV Show"
+# }
+
+# media_collection.insert_many([media1, media2, media3, media4, media5, media6, media7, media8, media9])
 
 
-    media_collection.insert_many(media_documents)
-    #user collection sample data
-    user_collection = db["users"]
-    print("Connected to MongoDB")
-except Exception as e:
-            print(f"Error connecting to MongoDB: {str(e)}")
+
