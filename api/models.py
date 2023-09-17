@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 
 
 @dataclass
 class User:
-    email: str
+    _id: str # user's email
     name: str
     token: str
 
@@ -17,10 +17,11 @@ class RoomMember(User):
 # Create an instance of room
 @dataclass
 class Room:
+    _id: str # room code
     name: str
     type: str
     length: int
-    members: List[RoomMember]
+    members: List[Union[RoomMember, dict]]
 
 # Information about the show or book, including episode list
 

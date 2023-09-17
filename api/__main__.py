@@ -4,8 +4,8 @@ import secrets
 
 import pymongo
 from dotenv import load_dotenv
-from models import Room, User
-from quart import Blueprint, Quart, jsonify, request
+from api.models import Room, User
+from quart import Quart, jsonify, request
 
 app = Quart(__name__)
 load_dotenv()
@@ -28,7 +28,7 @@ async def authenticate() -> None:
         token = secrets.token_urlsafe(32)
         names = ("John", "Andy", "Joe")
         new_user = User(
-            email=email,
+            _id=email,
             token=token,
             name=random.choice(names) + str(random.randint(1, 100)),
         )
@@ -46,11 +46,21 @@ async def rooms() -> None:
                 request.args.get("type"),
                 request.args.get("length"),
             )
-            new_room = Room(name=name, type=type, length=length, members=[])
+            new_room = Room(_id=secrets.token_urlsafe(8), name=name, type=type, length=length, members=[])
             db.get_collection("rooms").insert_one(**new_room)
             return "", 201
         except Exception as e:
             return str(e), 400
+    else:
+        # get all my rooms
+        user_token = request.headers.get('token')
+        # get user's email from token
+        user = db.get_collection("users").find_one({"token": user_token})
+        if not user:
+            return "Invalid token", 400
+        # get all rooms with user's email in members
+        rooms = db.get_collection("rooms").find({"members": user["_id"]})
+        return jsonify(list(rooms))
 
 if __name__ == "__main__":
     run()
