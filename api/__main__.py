@@ -4,7 +4,7 @@ import secrets
 
 import pymongo
 from dotenv import load_dotenv
-from api.models import Room, User
+from models import Room, User
 from quart import Quart, jsonify, request
 
 app = Quart(__name__)
@@ -21,7 +21,7 @@ def run() -> None:
 async def authenticate() -> None:
     # login with username and return session token
     email = request.args.get("email")
-    res = db.get_collection("users").find_one({"email": email})
+    res = db.get_collection("users").find_one({"_id": email})
     if res:
         return jsonify(token=res["token"])
     else:
@@ -46,7 +46,8 @@ async def rooms() -> None:
                 request.args.get("type"),
                 request.args.get("length"),
             )
-            new_room = Room(_id=secrets.token_urlsafe(8), name=name, type=type, length=length, members=[])
+            new_room = Room(_id=secrets.token_urlsafe(
+                8), name=name, type=type, length=length, members=[])
             db.get_collection("rooms").insert_one(**new_room)
             return "", 201
         except Exception as e:
@@ -61,7 +62,6 @@ async def rooms() -> None:
         # get all rooms with user's email in members
         rooms = db.get_collection("rooms").find({"members": user["_id"]})
         return jsonify(list(rooms))
-
 
 
 if __name__ == "__main__":

@@ -1,10 +1,5 @@
 from pymongo import MongoClient
 
-# import sys
-#
-# import os
-# from utils import db
-
 try:
     # Specify the database name in the connection string
     client = MongoClient(
@@ -56,5 +51,6 @@ try:
     # user collection sample data
     user_collection = db["users"]
     print("Connected to MongoDB")
+
 except Exception as e:
     print(f"Error connecting to MongoDB: {str(e)}")
