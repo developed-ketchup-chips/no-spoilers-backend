@@ -5,7 +5,7 @@ import secrets
 import pymongo
 from dataclasses import asdict
 from dotenv import load_dotenv
-from api.models import Room, RoomMember, User
+from models import Room, RoomMember, User
 from quart import Quart, jsonify, request
 
 app = Quart(__name__)
@@ -101,8 +101,8 @@ async def update_room_progress(room_id, user_id):
     # get user's email from token
     user = db.get_collection("users").find_one({"token": user_token})
     if room:
-        # Find the user with the specified user_id within the room's members
-        user_to_update = next((member for member in room["members"] if member["user_id"] == int(user_id)), None)
+        # Find the user with the specified name within the room's members
+        user_to_update = next((member for member in room["members"] if member["_id"] == user["_id"]), None)
 
         if user_to_update:
             # Update the user's progress
