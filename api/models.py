@@ -19,7 +19,7 @@ class RoomMember:
 # Create an instance of room
 @dataclass
 class Room:
-    _id: str  # code
+    _id: str # code
     name: str
     type: str
     length: int

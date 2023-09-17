@@ -29,7 +29,7 @@ async def authenticate() -> None:
         token = secrets.token_urlsafe(32)
         names = ("John", "Andy", "Joe")
         new_user = User(
-            email=email,
+            _id=email,
             token=token,
             name=random.choice(names) + str(random.randint(1, 100)),
         )
@@ -39,6 +39,11 @@ async def authenticate() -> None:
 
 @app.route("/rooms", methods=["POST", "GET"])
 async def rooms() -> None:
+    user_token = request.headers.get("token")
+    # get user's email from token
+    user = db.get_collection("users").find_one({"token": user_token})
+    if not user:
+        raise Exception("Invalid token")
     if request.method == "POST":
         # create a new room
         try:
@@ -47,11 +52,6 @@ async def rooms() -> None:
                 request.args.get("type"),
                 request.args.get("length"),
             )
-            user_token = request.headers.get("token")
-            # get user's email from token
-            user = db.get_collection("users").find_one({"token": user_token})
-            if not user:
-                raise Exception("Invalid token")
             new_roommember = RoomMember(_id=user["_id"], name=user["name"], progress=0)
             new_room = Room(
                 _id=secrets.token_urlsafe(8),
@@ -67,11 +67,17 @@ async def rooms() -> None:
 
             print(traceback.format_exc())
             return str(e), 400
+    else:
+        # Retrieve the rooms that match the query
+        rooms = db.get_collection("rooms").find(
+            {"members": {"$elemMatch": {"_id": user["_id"]}}}
+        )
+        return jsonify(list(rooms))
 
 @app.route("/room/<room_id>", methods=["GET"])
-def get_room_info(room_id):
+async def get_room_info(room_id):
     # Retrieve room information based on the provided room_id
-    room = db.get_collection("rooms").find_one({"_id": int(room_id)})
+    room = db.get_collection("rooms").find_one({"_id": room_id})
     
     if room:
         # Convert the room document to a dictionary
@@ -87,11 +93,13 @@ def get_room_info(room_id):
         # Query to find all rooms where the RoomMember is a member=
         return jsonify({"error": "Room not found"}), 404
 
-@app.route("/room/<room_id>/progress/<user_id>", methods=["PUT"])
-def update_room_progress(room_id, user_id):
+@app.route("/room/<room_id>", methods=["PUT"])
+async def update_room_progress(room_id, user_id):
     # Retrieve the room based on the provided room_id
     room = db.get_collection("rooms").find_one({"_id"})
-    
+    user_token = request.headers.get("token")
+    # get user's email from token
+    user = db.get_collection("users").find_one({"token": user_token})
     if room:
         # Find the user with the specified user_id within the room's members
         user_to_update = next((member for member in room["members"] if member["user_id"] == int(user_id)), None)
@@ -109,11 +117,28 @@ def update_room_progress(room_id, user_id):
     else:
         return jsonify({"error": "Room not found"}), 404
 
-        # Retrieve the rooms that match the query
-        rooms = db.get_collection("rooms").find(
-            {"members": {"$elemMatch": {"_id": user["_id"]}}}
-        )
-        return jsonify(list(rooms))
+@app.route("/rooms/<code>/join", methods=["POST"])
+async def rooms_code_join(code: str) -> None:
+    # get room with code
+    # code = request.args.get("code")
+    if not code:
+        return "No code provided", 400
+    user_token = request.headers.get("token")
+    user = db.get_collection("users").find_one({"token": user_token})
+    if not user:
+        return "Invalid token", 400
+    # find the room with the code
+    room = db.get_collection("rooms").find_one({"_id": code})
+    if not room:
+        return "Room not found", 404
+    # check if user is already in room
+    if any(member["_id"] == user["_id"] for member in room["members"]):
+        return "User already in room", 400
+    # add user to room
+    new_roommember = RoomMember(_id=user["_id"], name=user["name"], progress=0)
+    db.get_collection("rooms").find_one_and_update({'_id': code}, {"$set": {"members": room["members"] + [asdict(new_roommember)]}})
+    return "", 201
+
 
 if __name__ == "__main__":
     run()
