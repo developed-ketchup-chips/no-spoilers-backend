@@ -29,7 +29,7 @@ async def authenticate() -> None:
         token = secrets.token_urlsafe(32)
         names = ("John", "Andy", "Joe")
         new_user = User(
-            _id=email,
+            email=email,
             token=token,
             name=random.choice(names) + str(random.randint(1, 100)),
         )
@@ -67,6 +67,16 @@ async def rooms() -> None:
 
             print(traceback.format_exc())
             return str(e), 400
+
+@app.route("/room/<room_id>", methods=["GET"])
+def get_room_info(room_id):
+    # Retrieve room information based on the provided room_id
+    room = db.get_collection("rooms").find_one({"_id": int(room_id)})
+    
+    if room:
+        # Convert the room document to a dictionary
+        room_info = dict(room)
+        return jsonify(room_info)
     else:
         user_token = request.headers.get("token")
         # get user's email from token
@@ -75,6 +85,29 @@ async def rooms() -> None:
             return "Invalid token", 400
         # get all rooms with user's email in members
         # Query to find all rooms where the RoomMember is a member=
+        return jsonify({"error": "Room not found"}), 404
+
+@app.route("/room/<room_id>/progress/<user_id>", methods=["PUT"])
+def update_room_progress(room_id, user_id):
+    # Retrieve the room based on the provided room_id
+    room = db.get_collection("rooms").find_one({"_id"})
+    
+    if room:
+        # Find the user with the specified user_id within the room's members
+        user_to_update = next((member for member in room["members"] if member["user_id"] == int(user_id)), None)
+
+        if user_to_update:
+            # Update the user's progress
+            new_progress = request.json.get("progress")
+            user_to_update["progress"] = new_progress
+
+            # Update the room document in the collection
+            db.get_collection("rooms").update_one({"_id": int(room_id)}, {"$set": {"members": room["members"]}})
+            return jsonify({"message": "Progress updated successfully"})
+        else:
+            return jsonify({"error": "User not found in the room"}), 404
+    else:
+        return jsonify({"error": "Room not found"}), 404
 
         # Retrieve the rooms that match the query
         rooms = db.get_collection("rooms").find(
