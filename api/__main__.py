@@ -32,7 +32,7 @@ async def authenticate() -> None:
             token=token,
             name=random.choice(names) + str(random.randint(1, 100)),
         )
-        db.get_collection("users").insert_one(**new_user)
+        db.get_collection("users").insert_one(dict(new_user))
         return jsonify(token=token)
 
 
@@ -47,7 +47,7 @@ async def rooms() -> None:
                 request.args.get("length"),
             )
             new_room = Room(_id=secrets.token_urlsafe(8), name=name, type=type, length=length, members=[])
-            db.get_collection("rooms").insert_one(**new_room)
+            db.get_collection("rooms").insert_one(dict(new_room))
             return "", 201
         except Exception as e:
             return str(e), 400

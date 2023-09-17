@@ -1,17 +1,11 @@
 from dataclasses import dataclass
 from typing import List
-from pymongo import MongoClient
-from pymongo.collection import Collection
 
-client = MongoClient("mongodb+srv://mihiri:mihiri@cluster0.ey8zati.mongodb.net/")
 
-db = client["no-spoilers"]
-rooms = db["rooms"]
-media_collection = db["media"]
 
 @dataclass
 class User:
-    email: str
+    _id: str # email
     name: str
     token: str
 
@@ -24,40 +18,16 @@ class RoomMember(User):
 # Create an instance of room
 @dataclass
 class Room:
+    _id: str # code
     name: str
     type: str
     length: int
     members: List[RoomMember]
 
-    def create_room(cls, media_title, membership_list):
-    # Find a document in the collection that matches the given media title
-        media_document = media_collection.find_one({"title": media_title})
-
-        # Check if a document was found
-        if media_document:
-            # Convert the MongoDB document to a Python dictionary
-            media_info = {
-                "title": media_document["title"],
-                "episode_count": media_document["episode_count"],
-                "media_type" : media_document["media_type"]
-            }
-
-            # Create an instance of Room using the media_info
-            room = cls(media_info, members=membership_list)
-            rooms.insert_one(room.__dict__)
-
-            return media_info
-        else:
-            return None
-
-# Information about the show or book, including episode list
-
+@dataclass
 class Comment:
-    def __init__(self, user, comment):
-        if not comment.strip():  # Check if comment is blank or contains only whitespace
-            raise ValueError("Comment cannot be blank.")
-        self.user = user
-        self.comment = comment
+    user: str
+    comment: str
 
 
 class CommentList:
