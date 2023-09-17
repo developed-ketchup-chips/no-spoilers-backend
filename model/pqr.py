@@ -1,13 +1,11 @@
 from pymongo import MongoClient
-from media_type import MediaType
 client = MongoClient("mongodb+srv://mihiri:mihiri@cluster0.ey8zati.mongodb.net/")
 
-# Access the "mydb" database (it will be created if it doesn't exist)
 db = client["no-spoilers"]
 
 #Sample Room Content
 
-room_collection = db['rooms']
+room_collection = db["rooms"]
 
 room1 = {
     "title": "Serial Experiments Lain",
@@ -15,9 +13,11 @@ room1 = {
     "media_type": "TV Show",
     "user_progress": [
         {"name": "John", "progress": 6},  # User 1 has watched 6 episodes
-        {"name": "Jake", "progress": 6},  # User 2 has watched 2 episodes
+        {"name": "Jake", "progress": 2},  # User 2 has watched 2 episodes
     ]
 }
+
+room_collection.insert_many([room1])
 
 client.close()
 
