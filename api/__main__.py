@@ -59,7 +59,7 @@ async def rooms() -> None:
                 _id=secrets.token_urlsafe(8),
                 name=name,
                 type=type,
-                length=length,
+                length=int(length),
                 members=[new_roommember],
             )
             db.get_collection("rooms").insert_one(asdict(new_room))
@@ -119,8 +119,8 @@ async def update_room_progress(room_id, user_id):
     else:
         return jsonify({"error": "Room not found"}), 404
 
-@app.route("/rooms/<code>/join", methods=["POST"])
-async def rooms_code_join(code: str) -> None:
+@app.route("/room/<code>/join", methods=["POST"])
+async def room_code_join(code: str) -> None:
     # get room with code
     # code = request.args.get("code")
     if not code:
