@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 # object that save users information
 # ex Profile that has:  Name and Id.
 @dataclass
