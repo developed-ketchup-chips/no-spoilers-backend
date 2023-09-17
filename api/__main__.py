@@ -95,16 +95,22 @@ async def get_room_info():
         return jsonify({"error": "Room not found"}), 404
 
 
-@app.route("/room/<room_id>/progress/<name>", methods=["PUT"])
+@app.route("/room/<room_id>", methods=["PUT"])
 async def update_room_progress():
+    user_token = request.headers.get("token")
+    # get user's email from token
+    user = db.get_collection("users").find_one({"token": user_token})
+    if not user:
+        return "Invalid token", 201
+    
     room_id = request.args.get("_id")
-    user = request.args.get("username")
+
     # Retrieve the room based on the provided room_id
     room = db.get_collection("rooms").find_one({"_id" : room_id})
     
     if room:
         # Find the user with the specified name within the room's members
-        user_to_update = next((member for member in room["members"] if member["name"] == user), None)
+        user_to_update = next((member for member in room["members"] if member["_id"] == user["_id"]), None)
 
         if user_to_update:
             # Update the user's progress
@@ -118,6 +124,8 @@ async def update_room_progress():
             return jsonify({"error": "User not found in the room"}), 404
     else:
         return jsonify({"error": "Room not found"}), 404
+
+
 
 if __name__ == "__main__":
     run()
